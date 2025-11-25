@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MODIFICATION: Title updated -->
+    <title>I Ate It All - Tally</title>
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. Load Google Font (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            /* Prevent text selection on buttons */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        /* Make tap feedback more obvious on mobile */
+        .tap-btn:active {
+            transform: scale(0.95);
+            opacity: 0.9;
+        }
+        /* Smooth thermometer fill animation */
+        #thermoFill {
+            transition: height 400ms ease;
+        }
+        /* Helper to hide screens */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 w-full h-dvh">
+
+    <!-- ====================================================== -->
+    <!-- Screen: Splash / Welcome (shown first)               -->
+    <!-- ====================================================== -->
+    <div id="splashScreen" class="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-300">
+        <div class="max-w-xl text-center px-6">
+            <!-- NOTE: Place the attached tiger image beside this HTML file
+                 and name it `tiger.png` (same directory) or update the src below. -->
+            <img id="splashImage" src="https://resources.finalsite.net/images/f_auto,q_auto/v1588659246/aesacin/kmaphlbpb2mlj4c5qqux/Tiger.png" alt="AES Tigers" class="mx-auto w-64 h-64 object-contain rounded-full shadow-xl"/>
+            <h1 class="mt-6 text-6xl font-extrabold text-black">I ate it all!</h1>
+            <p class="mt-2 text-xl text-black/80">The AES food waste project</p>
+            <button id="enterBtn" class="mt-8 px-8 py-4 bg-black text-white rounded-full text-2xl font-semibold tap-btn">Enter</button>
+            <button id="adminBtn" class="mt-4 px-6 py-3 bg-white text-black rounded-full text-lg font-medium border border-black tap-btn">Admin</button>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- Screen: Admin (hidden until opened)                  -->
+    <!-- ====================================================== -->
+    <div id="adminScreen" class="hidden w-full h-full flex flex-col items-center justify-start p-8 bg-gray-50">
+        <div class="w-full max-w-2xl bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold mb-4">Admin Panel (no login)</h2>
+            <div class="grid grid-cols-1 gap-4">
+                <label class="flex flex-col">
+                    <span class="text-sm text-gray-600">Set total clean plates</span>
+                    <input id="adminScoreInput" type="number" class="mt-1 p-2 border rounded" placeholder="Enter integer value" />
+                </label>
+
+                <label class="flex flex-col">
+                    <span class="text-sm text-gray-600">Set goal value</span>
+                    <input id="adminGoalInput" type="number" class="mt-1 p-2 border rounded" placeholder="e.g. 1000" />
+                </label>
+
+                <label class="flex flex-col">
+                    <span class="text-sm text-gray-600">Goal period</span>
+                    <select id="adminGoalPeriod" class="mt-1 p-2 border rounded">
+                        <option value="total">Total / All-time</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </label>
+
+                <div class="flex gap-3 mt-2">
+                    <button id="adminSaveBtn" class="px-4 py-2 bg-green-600 text-white rounded">Save</button>
+                    <button id="adminBackBtn" class="px-4 py-2 bg-gray-300 text-black rounded">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- Screen: Main Tally Screen (hidden until splash dismissed) -->
+    <!-- ====================================================== -->
+    <div id="mainScreen" class="hidden w-full h-full flex flex-col items-center justify-between p-8 bg-green-50">
+        <!-- Header -->
+        <div class="text-center">
+            <h2 class="text-3xl font-bold text-green-800">Clean Plate Tally</h2>
+            <p class="text-lg text-green-600">Tap the button for every clean plate!</p>
+        </div>
+
+        <!-- The Big Counter -->
+        <div class="flex flex-col items-center">
+            <p class="text-5xl font-semibold text-gray-500">Total:</p>
+            <p id="scoreDisplay" class="text-9xl font-extrabold text-green-600" style="font-size: 15rem; line-height: 1;">
+                0
+            </p>
+        </div>
+        
+        <!-- Thermometer (left) and The Big +1 Button (right) -->
+        <div class="w-full max-w-4xl flex flex-row items-center justify-between gap-8">
+            <!-- Thermometer -->
+            <div id="thermoWrap" class="flex items-center gap-6">
+                <div class="text-left">
+                    <p class="text-sm text-gray-600">Goal: <span id="goalLabel" class="font-semibold">1000</span> plates</p>
+                    <p id="goalPeriodLabel" class="text-xs text-gray-500">Period: total</p>
+                    <p class="text-lg text-gray-800 font-bold">Progress</p>
+                </div>
+                <div id="thermometer" class="w-20 h-80 bg-white rounded-full border border-gray-300 shadow-inner overflow-hidden relative">
+                    <div id="thermoFill" class="absolute bottom-0 left-0 w-full bg-red-500" style="height:0%"></div>
+                </div>
+                <div class="text-sm text-gray-700">
+                    <p class="text-2xl font-bold" id="percentLabel">0%</p>
+                    <p id="countLabel" class="text-gray-600">0 / 1000</p>
+                </div>
+            </div>
+
+            <!-- The Big +1 Button -->
+            <button id="tallyButton" class="tap-btn w-full max-w-md p-8 bg-green-500 text-white text-5xl font-bold rounded-full shadow-2xl transition-all duration-150 ease-in-out">
+                +1
+            </button>
+        </div>
+
+        <!-- MODIFICATION: Removed the "Back" button -->
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- JavaScript (MODIFICATION: Simplified)                  -->
+    <!-- ====================================================== -->
+    <script type="module">
+        // --- 1. Import Firebase Services ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            onSnapshot, 
+            setDoc,
+            increment
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 2. Get Canvas Environment Variables ---
+        
+        // This is a special variable from the environment.
+        // For local testing, we can give it a default value.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-local-app';
+        
+        // ---
+        // --- 🔥 Your Firebase Config ---
+        // ---
+        // MODIFICATION: Reverted to the config from your screenshot,
+        // as the one from the text snippet was causing an API key error.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQSkidBXFHXywsHNXvRGgHfkFBdk30xU",
+            authDomain: "aesfoodwasteproject.firebaseapp.com",
+            projectId: "aesfoodwasteproject",
+            storageBucket: "aesfoodwasteproject.appspot.com",
+            messagingSenderId: "168810765354",
+            appId: "1:168810765354:web:ca9355290bfbf93c4ef753",
+            measurementId: "G-C-F10B6JV2ZX"
+        };
+        // ---
+        
+        // We set this to null for local testing.
+        const initialAuthToken = null; 
+
+        // --- 3. Initialize Firebase ---
+        let app, auth, db, tallyDocRef;
+        let unsubscribeFromTally; // To stop listening when not needed
+
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            // Define the path to our single tally document
+            // Using the 'appId' ensures this is unique to your app.
+            const tallyPath = `/artifacts/${appId}/public/data/tally/campaign`;
+            tallyDocRef = doc(db, tallyPath);
+
+        } catch (e) {
+            console.error("Error initializing Firebase:", e);
+            alert("Could not connect to the database. Check your `firebaseConfig` object.");
+        }
+
+
+        // --- 4. Get References to UI Elements ---
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const tallyButton = document.getElementById('tallyButton');
+    // Splash elements
+    const splashScreen = document.getElementById('splashScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    const enterBtn = document.getElementById('enterBtn');
+    const adminBtn = document.getElementById('adminBtn');
+    // Admin screen elements
+    const adminScreen = document.getElementById('adminScreen');
+    const adminScoreInput = document.getElementById('adminScoreInput');
+    const adminGoalInput = document.getElementById('adminGoalInput');
+    const adminGoalPeriod = document.getElementById('adminGoalPeriod');
+    const adminSaveBtn = document.getElementById('adminSaveBtn');
+    const adminBackBtn = document.getElementById('adminBackBtn');
+        // Thermometer elements & goal (UI-only)
+    const thermoFill = document.getElementById('thermoFill');
+    const percentLabel = document.getElementById('percentLabel');
+    const countLabel = document.getElementById('countLabel');
+    const goalLabel = document.getElementById('goalLabel');
+    const goalPeriodLabel = document.getElementById('goalPeriodLabel');
+    // dynamic goal/period (default)
+    let GOAL = 1000; // default main goal
+    let GOAL_PERIOD = 'total';
+    if (goalLabel) goalLabel.textContent = GOAL;
+        // helper to format period for display
+        function formatPeriod(p) {
+            if (!p) return 'All-time';
+            const map = {
+                total: 'All-time',
+                daily: 'Daily',
+                weekly: 'Weekly',
+                monthly: 'Monthly',
+                yearly: 'Yearly'
+            };
+            return map[p] || String(p);
+        }
+        if (goalPeriodLabel) goalPeriodLabel.textContent = `Period: ${formatPeriod(GOAL_PERIOD)}`;
+
+        // Splash -> Main navigation
+        if (enterBtn) {
+            enterBtn.addEventListener('click', () => {
+                if (splashScreen) splashScreen.classList.add('hidden');
+                if (mainScreen) mainScreen.classList.remove('hidden');
+            });
+        }
+
+        // Admin button: open the admin screen and pre-fill current values
+        if (adminBtn) {
+            adminBtn.addEventListener('click', () => {
+                // hide splash and show admin
+                if (splashScreen) splashScreen.classList.add('hidden');
+                if (adminScreen) adminScreen.classList.remove('hidden');
+                // pre-fill with current values
+                try {
+                    // Use currently-known GOAL and GOAL_PERIOD and score display
+                    if (adminGoalInput) adminGoalInput.value = GOAL;
+                    if (adminGoalPeriod) adminGoalPeriod.value = GOAL_PERIOD || 'total';
+                    if (adminScoreInput) adminScoreInput.value = Number(scoreDisplay.textContent) || 0;
+                } catch (e) {
+                    console.warn('Admin prefill failed', e);
+                }
+            });
+        }
+
+        // Admin Back: return to splash (do not apply changes)
+        if (adminBackBtn) {
+            adminBackBtn.addEventListener('click', () => {
+                if (adminScreen) adminScreen.classList.add('hidden');
+                if (splashScreen) splashScreen.classList.remove('hidden');
+            });
+        }
+
+        // Admin Save: write custom score/goal/period to the same tally document
+        if (adminSaveBtn) {
+            adminSaveBtn.addEventListener('click', async () => {
+                const scoreVal = adminScoreInput ? Number(adminScoreInput.value) : null;
+                const goalVal = adminGoalInput ? Number(adminGoalInput.value) : null;
+                const periodVal = adminGoalPeriod ? adminGoalPeriod.value : null;
+                const updateObj = {};
+                if (!isNaN(scoreVal) && scoreVal !== null) updateObj.score = scoreVal;
+                if (!isNaN(goalVal) && goalVal !== null) updateObj.goal = goalVal;
+                if (periodVal) updateObj.period = periodVal;
+                try {
+                    if (Object.keys(updateObj).length > 0) {
+                        await setDoc(tallyDocRef, updateObj, { merge: true });
+                    }
+                    // Update local variables immediately for UI
+                    if (typeof updateObj.goal !== 'undefined') {
+                        GOAL = updateObj.goal;
+                        if (goalLabel) goalLabel.textContent = GOAL;
+                    }
+                    if (typeof updateObj.period !== 'undefined') {
+                        GOAL_PERIOD = updateObj.period;
+                        if (goalPeriodLabel) goalPeriodLabel.textContent = GOAL_PERIOD;
+                    }
+                    if (typeof updateObj.score !== 'undefined') {3
+                        scoreDisplay.textContent = updateObj.score;
+                    }
+                    // After saving, keep admin screen open so admin can continue making changes
+                } catch (e) {
+                    console.error('Admin save error', e);
+                    alert('Could not save admin changes. Check console for details.');
+                }
+            });
+        }
+
+        // Try to load an external `tiger.png` first; if not available,
+        // replace the <img> with an inline SVG fallback so the splash has
+        // an embedded image without requiring a separate file.
+        (function tryLoadEmbeddedTiger() {
+            const imgEl = document.getElementById('splashImage');
+            if (!imgEl) return;
+            // Test fetch for the remote file. If it 404s or errors, replace with inline SVG.
+            const remoteTiger = 'https://resources.finalsite.net/images/f_auto,q_auto/v1588659246/aesacin/kmaphlbpb2mlj4c5qqux/Tiger.png';
+            fetch(remoteTiger, { method: 'HEAD' }).then(resp => {
+                if (!resp.ok) {
+                    // Replace with inline SVG fallback
+                    const wrapper = imgEl.parentElement;
+                    if (!wrapper) return;
+                    wrapper.removeChild(imgEl);
+                    // Simple circular tiger-style badge SVG fallback (stylistic placeholder)
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.setAttribute('viewBox', '0 0 200 200');
+                    svg.setAttribute('width', '256');
+                    svg.setAttribute('height', '256');
+                    svg.innerHTML = `
+                        <defs>
+                          <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#FFD54F"/>
+                            <stop offset="100%" stop-color="#FFC107"/>
+                          </linearGradient>
+                        </defs>
+                        <circle cx="100" cy="100" r="96" fill="black" />
+                        <circle cx="100" cy="100" r="82" fill="url(#g)" />
+                        <text x="50%" y="54%" text-anchor="middle" font-size="22" font-family="Inter, Arial" font-weight="700" fill="black">AES</text>
+                        <text x="50%" y="76%" text-anchor="middle" font-size="18" font-family="Inter, Arial" fill="black">TIGERS</text>
+                    `;
+                    svg.classList.add('mx-auto', 'shadow-xl');
+                    wrapper.appendChild(svg);
+                    console.info('tiger.png not found; using inline SVG fallback. If you want your exact logo embedded, I can insert it as a base64 data-URI into the HTML.')
+                }
+            }).catch(() => {
+                // On network or CORS error also fallback to SVG
+                const wrapper = imgEl.parentElement;
+                if (!wrapper) return;
+                wrapper.removeChild(imgEl);
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 200 200');
+                svg.setAttribute('width', '256');
+                svg.setAttribute('height', '256');
+                svg.innerHTML = `
+                    <defs>
+                      <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#FFD54F"/>
+                        <stop offset="100%" stop-color="#FFC107"/>
+                      </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="96" fill="black" />
+                    <circle cx="100" cy="100" r="82" fill="url(#g2)" />
+                    <text x="50%" y="54%" text-anchor="middle" font-size="22" font-family="Inter, Arial" font-weight="700" fill="black">AES</text>
+                    <text x="50%" y="76%" text-anchor="middle" font-size="18" font-family="Inter, Arial" fill="black">TIGERS</text>
+                `;
+                svg.classList.add('mx-auto', 'shadow-xl');
+                wrapper.appendChild(svg);
+                console.info('tiger.png not accessible; using inline SVG fallback. To embed the exact logo, provide the image and I will insert it as a base64 data-URI.')
+            });
+        })();
+        
+        // --- 5. Firebase Authentication Logic ---
+
+        // Sign in the public (anonymous) user
+        async function authAnonymous() {
+             try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    // For local testing, we just sign in anonymously.
+                    await signInAnonymously(auth);
+                }
+                console.log("Anonymous auth successful.");
+            } catch (error) {
+                console.error("Anonymous Auth Error:", error);
+            }
+        }
+
+        // --- 6. Core Tally Logic (Firestore) ---
+
+        // Function to start listening for real-time score updates
+        function listenToTally() {
+            // Stop any old listener
+            if (unsubscribeFromTally) unsubscribeFromTally();
+
+            // Create a new listener on our document
+            unsubscribeFromTally = onSnapshot(tallyDocRef, (doc) => {
+                let currentScore = 0;
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        // score
+                        currentScore = data.score;
+                        // If a goal was saved in the document, use it
+                        if (typeof data.goal !== 'undefined' && data.goal !== null) {
+                            GOAL = Number(data.goal) || GOAL;
+                        }
+                        // If a period was saved, use it
+                        if (typeof data.period !== 'undefined' && data.period !== null) {
+                            GOAL_PERIOD = data.period;
+                        }
+                    } else {
+                    // If the document doesn't exist, create it.
+                    // This is good for the very first time the app runs.
+                    setDoc(tallyDocRef, { score: 0 });
+                }
+                // Update the UI
+                scoreDisplay.textContent = currentScore;
+                // Update thermometer (UI-only, based on existing tally value)
+                try {
+                    const numeric = Number(currentScore) || 0;
+                    const pct = Math.max(0, Math.min(1, numeric / GOAL));
+                    const pctDisplay = Math.round(pct * 100);
+                    if (thermoFill) thermoFill.style.height = (pct * 100) + '%';
+                    if (percentLabel) percentLabel.textContent = pctDisplay + '%';
+                        if (countLabel) countLabel.textContent = `${numeric} / ${GOAL} (${formatPeriod(GOAL_PERIOD)})`;
+                        if (goalLabel) goalLabel.textContent = GOAL;
+                        if (goalPeriodLabel) goalPeriodLabel.textContent = `Period: ${formatPeriod(GOAL_PERIOD)}`;
+                } catch (e) {
+                    console.warn('Thermometer update error', e);
+                }
+            }, (error) => {
+                console.error("Error listening to tally:", error);
+                alert("Connection lost. Please refresh.");
+            });
+        }
+
+        // Helper: temporarily disable the tally button and grey it out
+        function disableTallyTemporary(ms = 1000) {
+            if (!tallyButton) return;
+            tallyButton.disabled = true;
+            // Visual disabled styles: remove green, add gray + reduced opacity
+            tallyButton.classList.remove('bg-green-500');
+            tallyButton.classList.add('bg-gray-400', 'opacity-80', 'pointer-events-none');
+            setTimeout(() => {
+                tallyButton.disabled = false;
+                tallyButton.classList.remove('bg-gray-400', 'opacity-80', 'pointer-events-none');
+                tallyButton.classList.add('bg-green-500');
+            }, ms);
+        }
+
+        // Increment the score (+1) with a 1s local cooldown
+        tallyButton.addEventListener('click', async () => {
+            // Immediately disable locally for 1s to prevent rapid clicking
+            disableTallyTemporary(1000);
+            try {
+                // Use Firestore's `increment` to safely add 1
+                // We use setDoc with merge:true to create the document
+                // if it doesn't exist, which fixes the "No document" error.
+                await setDoc(tallyDocRef, {
+                    score: increment(1)
+                }, { merge: true }); // <-- This creates the doc if missing
+            } catch (error) {
+                console.error("Error incrementing score:", error);
+            }
+        });
+
+        // --- 7. Initial App Start ---
+        authAnonymous(); // Sign in anonymously
+        listenToTally(); // Start listening for score updates
+
+    </script>
+</body>
+</html>
