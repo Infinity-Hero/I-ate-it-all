@@ -10,7 +10,14 @@
     <!-- 2. Load Google Font (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
             font-family: 'Inter', sans-serif;
             overflow: hidden;
             /* Prevent text selection on buttons */
@@ -18,10 +25,40 @@
             -ms-user-select: none;
             user-select: none;
         }
+        /* Animations */
+        @keyframes buttonBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.92); }
+            100% { transform: scale(1); }
+        }
+        @keyframes buttonPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(74, 222, 128, 0); }
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
         /* Make tap feedback more obvious on mobile */
         .tap-btn:active {
             transform: scale(0.95);
             opacity: 0.9;
+        }
+        /* Enhanced button animations */
+        .tap-btn {
+            transition: all 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .tap-btn:hover {
+            transform: translateY(-2px);
+        }
+        .tap-btn:active {
+            animation: buttonBounce 300ms ease-out;
         }
         /* Smooth thermometer fill animation */
         #thermoFill {
@@ -31,14 +68,108 @@
         .hidden {
             display: none;
         }
+        /* Ensure all screen containers stretch to fill viewport */
+        .screen {
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+        }
+        /* Slider styling */
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #86efac, #10b981);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #059669;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 150ms ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #059669;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 150ms ease;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        /* Entire green section clickable */
+        #tallyArea {
+            cursor: pointer;
+            transition: background-color 150ms ease;
+        }
+        #tallyArea:active {
+            background-color: #16a34a;
+        }
+        /* Tally button with enhanced animation */
+        #tallyButton {
+            position: relative;
+            overflow: hidden;
+        }
+        #tallyButton::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+        }
+        #tallyButton.clicked::before {
+            animation: ripple 600ms ease-out;
+        }
+        /* Button glow on hover */
+        #tallyButton:hover {
+            box-shadow: 0 0 30px rgba(134, 239, 172, 0.6);
+        }
+        /* Left/right default proportions (match provided mockup) */
+        #leftSide { flex: 0 0 28%; max-width: 28%; }
+        #tallyArea { flex: 1; }
+        /* Make the +1 large, plain and centered (no circle) */
+        #tallyButton {
+            background: transparent !important;
+            width: 60%;
+            height: auto;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 2.5rem 0 !important;
+            font-size: 6.5rem !important;
+            line-height: 1 !important;
+            display: block;
+            text-align: center;
+            color: #ffffff !important;
+        }
+        /* ensure the clickable area is full height and visually similar to the mock */
+        #tallyArea { min-height: 100%; }
     </style>
 </head>
-<body class="bg-gray-100 w-full h-dvh">
+<body class="w-screen h-screen bg-gray-100">
 
     <!-- ====================================================== -->
     <!-- Screen: Splash / Welcome (shown first)               -->
     <!-- ====================================================== -->
-    <div id="splashScreen" class="w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-300">
+    <div id="splashScreen" class="screen w-full h-full flex flex-col items-center justify-center p-8 bg-yellow-300">
         <div class="max-w-xl text-center px-6">
             <!-- NOTE: Place the attached tiger image beside this HTML file
                  and name it `tiger.png` (same directory) or update the src below. -->
@@ -53,7 +184,7 @@
     <!-- ====================================================== -->
     <!-- Screen: Admin (hidden until opened)                  -->
     <!-- ====================================================== -->
-    <div id="adminScreen" class="hidden w-full h-full flex flex-col items-center justify-start p-8 bg-gray-50">
+    <div id="adminScreen" class="hidden screen w-full h-full flex flex-col items-center justify-start p-8 bg-gray-50">
         <div class="w-full max-w-2xl bg-white rounded-lg shadow p-6">
             <h2 class="text-2xl font-bold mb-4">Admin Panel (no login)</h2>
             <div class="grid grid-cols-1 gap-4">
@@ -89,46 +220,56 @@
     <!-- ====================================================== -->
     <!-- Screen: Main Tally Screen (hidden until splash dismissed) -->
     <!-- ====================================================== -->
-    <div id="mainScreen" class="hidden w-full h-full flex flex-col items-center justify-between p-8 bg-green-50">
-        <!-- Header -->
-        <div class="text-center">
-            <h2 class="text-3xl font-bold text-green-800">Clean Plate Tally</h2>
-            <p class="text-lg text-green-600">Tap the button for every clean plate!</p>
+    <div id="mainScreen" class="hidden screen w-full h-full flex flex-col bg-green-50">
+        <!-- Top Bar with Back Button & Header -->
+        <div class="flex items-center justify-between px-6 py-4 bg-green-100 shadow-sm">
+            <button id="backBtn" class="tap-btn px-3 py-2 text-sm font-semibold text-green-700 bg-white rounded border border-green-300 hover:bg-green-50">
+                ← Back
+            </button>
+            <div class="text-center flex-1">
+                <h2 class="text-2xl font-bold text-green-800">🍴 🗑️ Clean Plate Tally 🍽️ 🥄</h2>
+                <p class="text-sm text-green-600">Tap the button for every clean plate!</p>
+            </div>
+            <div class="w-12"></div> <!-- Spacer for centering -->
         </div>
 
-        <!-- The Big Counter -->
-        <div class="flex flex-col items-center">
-            <p class="text-5xl font-semibold text-gray-500">Total:</p>
-            <p id="scoreDisplay" class="text-9xl font-extrabold text-green-600" style="font-size: 15rem; line-height: 1;">
-                0
-            </p>
-        </div>
-        
-        <!-- Thermometer (left) and The Big +1 Button (right) -->
-        <div class="w-full max-w-4xl flex flex-row items-center justify-between gap-8">
-            <!-- Thermometer -->
-            <div id="thermoWrap" class="flex items-center gap-6">
-                <div class="text-left">
+        <!-- Main Content Area: Flex row that fills remaining space -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left Side: Score Display + Thermometer + Progress Info -->
+            <div id="leftSide" class="flex flex-col items-center justify-center flex-1 px-8 py-6 bg-green-50 transition-all duration-300">
+                <!-- Big Score Display -->
+                <p class="text-sm text-gray-600 mb-2">Total:</p>
+                <p id="scoreDisplay" class="text-8xl md:text-9xl font-extrabold text-green-600 leading-none">
+                    0
+                </p>
+
+                <!-- Goal & Period Info -->
+                <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">Goal: <span id="goalLabel" class="font-semibold">1000</span> plates</p>
                     <p id="goalPeriodLabel" class="text-xs text-gray-500">Period: total</p>
-                    <p class="text-lg text-gray-800 font-bold">Progress</p>
                 </div>
-                <div id="thermometer" class="w-20 h-80 bg-white rounded-full border border-gray-300 shadow-inner overflow-hidden relative">
-                    <div id="thermoFill" class="absolute bottom-0 left-0 w-full bg-red-500" style="height:0%"></div>
-                </div>
-                <div class="text-sm text-gray-700">
-                    <p class="text-2xl font-bold" id="percentLabel">0%</p>
-                    <p id="countLabel" class="text-gray-600">0 / 1000</p>
+
+                <!-- Thermometer Display -->
+                <div class="mt-8 flex items-center gap-4">
+                    <div id="thermometer" class="w-16 h-64 bg-white rounded-full border-2 border-gray-300 shadow-inner overflow-hidden relative flex-shrink-0">
+                        <div id="thermoFill" class="absolute bottom-0 left-0 w-full bg-red-500" style="height:0%"></div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-3xl md:text-4xl font-bold text-green-700" id="percentLabel">0%</p>
+                        <p id="countLabel" class="text-xs md:text-sm text-gray-600 mt-1">0 / 1000</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- The Big +1 Button -->
-            <button id="tallyButton" class="tap-btn w-full max-w-md p-8 bg-green-500 text-white text-5xl font-bold rounded-full shadow-2xl transition-all duration-150 ease-in-out">
-                +1
-            </button>
+            <!-- Right Side: The Big +1 Button (entire section clickable) -->
+            <div id="tallyArea" class="flex items-center justify-center flex-1 px-8 py-6 bg-green-500 transition-all duration-300">
+                <button id="tallyButton" class="tap-btn text-white font-bold shadow-none transition-all duration-150 ease-in-out">
+                    +1
+                </button>
+            </div>
         </div>
 
-        <!-- MODIFICATION: Removed the "Back" button -->
+        <!-- Removed slider control - layout is fixed to match mockup -->
     </div>
 
 
@@ -198,7 +339,10 @@
 
         // --- 4. Get References to UI Elements ---
         const scoreDisplay = document.getElementById('scoreDisplay');
-        const tallyButton = document.getElementById('tallyButton');
+    const tallyButton = document.getElementById('tallyButton');
+    const backBtn = document.getElementById('backBtn');
+    const tallyArea = document.getElementById('tallyArea');
+    const leftSide = document.getElementById('leftSide');
     // Splash elements
     const splashScreen = document.getElementById('splashScreen');
     const mainScreen = document.getElementById('mainScreen');
@@ -269,6 +413,69 @@
             });
         }
 
+        // Main Screen Back: return to splash
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                if (mainScreen) mainScreen.classList.add('hidden');
+                if (splashScreen) splashScreen.classList.remove('hidden');
+            });
+        }
+
+        // Layout is fixed to match the mockup (no slider)
+
+        // --- Make entire green section clickable ---
+        if (tallyArea) {
+            tallyArea.addEventListener('click', async () => {
+                // Trigger animation
+                tallyButton.classList.add('clicked');
+                setTimeout(() => tallyButton.classList.remove('clicked'), 600);
+                
+                // Disable locally for 1s to prevent rapid clicking
+                disableTallyTemporary(1000);
+                try {
+                    // Use Firestore's `increment` to safely add 1
+                    await setDoc(tallyDocRef, {
+                        score: increment(1)
+                    }, { merge: true });
+                } catch (error) {
+                    console.error("Error incrementing score:", error);
+                }
+            });
+        }
+
+        // --- Enhanced button animations ---
+        // Back button animation
+        if (backBtn) {
+            backBtn.addEventListener('mouseenter', () => {
+                backBtn.style.transform = 'translateY(-2px)';
+            });
+            backBtn.addEventListener('mouseleave', () => {
+                backBtn.style.transform = 'translateY(0)';
+            });
+        }
+
+        // Admin buttons animation
+        if (adminSaveBtn) {
+            adminSaveBtn.classList.add('tap-btn');
+            adminSaveBtn.style.transition = 'all 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+        if (adminBackBtn) {
+            adminBackBtn.classList.add('tap-btn');
+            adminBackBtn.style.transition = 'all 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+
+        // Enter button animation
+        if (enterBtn) {
+            enterBtn.classList.add('tap-btn');
+            enterBtn.style.transition = 'all 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+
+        // Admin button animation
+        if (adminBtn) {
+            adminBtn.classList.add('tap-btn');
+            adminBtn.style.transition = 'all 150ms cubic-bezier(0.34, 1.56, 0.64, 1)';
+        }
+
         // Admin Save: write custom score/goal/period to the same tally document
         if (adminSaveBtn) {
             adminSaveBtn.addEventListener('click', async () => {
@@ -292,7 +499,7 @@
                         GOAL_PERIOD = updateObj.period;
                         if (goalPeriodLabel) goalPeriodLabel.textContent = GOAL_PERIOD;
                     }
-                    if (typeof updateObj.score !== 'undefined') {3
+                    if (typeof updateObj.score !== 'undefined') {
                         scoreDisplay.textContent = updateObj.score;
                     }
                     // After saving, keep admin screen open so admin can continue making changes
@@ -444,21 +651,7 @@
             }, ms);
         }
 
-        // Increment the score (+1) with a 1s local cooldown
-        tallyButton.addEventListener('click', async () => {
-            // Immediately disable locally for 1s to prevent rapid clicking
-            disableTallyTemporary(1000);
-            try {
-                // Use Firestore's `increment` to safely add 1
-                // We use setDoc with merge:true to create the document
-                // if it doesn't exist, which fixes the "No document" error.
-                await setDoc(tallyDocRef, {
-                    score: increment(1)
-                }, { merge: true }); // <-- This creates the doc if missing
-            } catch (error) {
-                console.error("Error incrementing score:", error);
-            }
-        });
+        // NOTE: Increment handled via #tallyArea click handler (covers whole right side)
 
         // --- 7. Initial App Start ---
         authAnonymous(); // Sign in anonymously
