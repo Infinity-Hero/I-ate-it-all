@@ -162,6 +162,25 @@
         }
         /* ensure the clickable area is full height and visually similar to the mock */
         #tallyArea { min-height: 100%; }
+        /* Screen transition animations */
+        .screen-enter {
+            opacity: 0;
+            transform: translateY(6vh) scale(0.995);
+        }
+        .screen-enter-active {
+            transition: opacity 420ms cubic-bezier(.2,.9,.2,1), transform 420ms cubic-bezier(.2,.9,.2,1);
+            opacity: 1;
+            transform: none;
+        }
+        .screen-exit {
+            opacity: 1;
+            transform: none;
+        }
+        .screen-exit-active {
+            transition: opacity 320ms ease, transform 320ms ease;
+            opacity: 0;
+            transform: translateY(-3vh) scale(0.995);
+        }
     </style>
 </head>
 <body class="w-screen h-screen bg-gray-100">
@@ -379,20 +398,48 @@
         }
         if (goalPeriodLabel) goalPeriodLabel.textContent = `Period: ${formatPeriod(GOAL_PERIOD)}`;
 
+        // Smooth screen switching helper
+        function switchScreen(fromEl, toEl) {
+            // durations should match the CSS transitions above
+            const enterMs = 420;
+            const exitMs = 320;
+            if (toEl) {
+                toEl.classList.remove('hidden');
+                // ensure previous animation classes removed
+                toEl.classList.remove('screen-exit', 'screen-exit-active', 'screen-enter', 'screen-enter-active');
+                toEl.classList.add('screen-enter');
+                // force a reflow so the transition runs
+                void toEl.offsetWidth;
+                toEl.classList.add('screen-enter-active');
+                // cleanup after animation: remove both enter classes so it stays visible
+                setTimeout(() => {
+                    toEl.classList.remove('screen-enter', 'screen-enter-active');
+                }, enterMs + 20);
+            }
+            if (fromEl) {
+                fromEl.classList.add('screen-exit');
+                // force reflow
+                void fromEl.offsetWidth;
+                fromEl.classList.add('screen-exit-active');
+                setTimeout(() => {
+                    fromEl.classList.remove('screen-exit', 'screen-exit-active');
+                    fromEl.classList.add('hidden');
+                }, exitMs + 20);
+            }
+        }
+
         // Splash -> Main navigation
         if (enterBtn) {
             enterBtn.addEventListener('click', () => {
-                if (splashScreen) splashScreen.classList.add('hidden');
-                if (mainScreen) mainScreen.classList.remove('hidden');
+                switchScreen(splashScreen, mainScreen);
             });
         }
 
         // Admin button: open the admin screen and pre-fill current values
         if (adminBtn) {
             adminBtn.addEventListener('click', () => {
-                // hide splash and show admin
-                if (splashScreen) splashScreen.classList.add('hidden');
-                if (adminScreen) adminScreen.classList.remove('hidden');
+                // animated switch from splash -> admin
+                switchScreen(splashScreen, adminScreen);
                 // pre-fill with current values
                 try {
                     // Use currently-known GOAL and GOAL_PERIOD and score display
@@ -405,19 +452,17 @@
             });
         }
 
-        // Admin Back: return to splash (do not apply changes)
+        // Admin Back: return to splash (animated)
         if (adminBackBtn) {
             adminBackBtn.addEventListener('click', () => {
-                if (adminScreen) adminScreen.classList.add('hidden');
-                if (splashScreen) splashScreen.classList.remove('hidden');
+                switchScreen(adminScreen, splashScreen);
             });
         }
 
-        // Main Screen Back: return to splash
+        // Main Screen Back: return to splash (animated)
         if (backBtn) {
             backBtn.addEventListener('click', () => {
-                if (mainScreen) mainScreen.classList.add('hidden');
-                if (splashScreen) splashScreen.classList.remove('hidden');
+                switchScreen(mainScreen, splashScreen);
             });
         }
 
