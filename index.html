@@ -45,6 +45,11 @@
                 opacity: 0;
             }
         }
+        /* Gentle arrow float for the "Why is this important?" prompt */
+        @keyframes arrowFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
         /* Make tap feedback more obvious on mobile */
         .tap-btn:active {
             transform: scale(0.95);
@@ -161,7 +166,18 @@
             color: #ffffff !important;
         }
         /* ensure the clickable area is full height and visually similar to the mock */
-        #tallyArea { min-height: 100%; }
+    #tallyArea { min-height: 100%; }
+    /* Styles for the Why prompt and filler content */
+    /* Panel top stays centered above the footer: reserve footer height so +1 remains vertically centered */
+    .panelTop { min-height: calc(100% - 72px); display: flex; align-items: center; justify-content: center; width: 100%; }
+    .panelFooter { height: 72px; position: sticky; bottom: 0; display: flex; align-items: center; justify-content: center; width: 100%; background: linear-gradient(to top, rgba(16,185,129,0.06), transparent); }
+    #whyPrompt { color: #ffffff; margin-top: 0.25rem; text-align: center; }
+    #whyPrompt .whyTitle { font-weight: 600; font-size: 1.05rem; }
+    /* Use an inline SVG chevron (non-emoji) and animate the SVG element */
+    #whyArrow svg { width: 26px; height: 26px; display: block; margin: 6px auto 0; stroke: #ffffff; stroke-width: 2; fill: none; animation: arrowFloat 1.2s ease-in-out infinite; }
+    #whyContent { color: rgba(255,255,255,0.95); line-height: 1.5; }
+    /* Slight translucent background for readability on long text */
+    #whyContent p { margin-bottom: 1rem; }
         /* Screen transition animations */
         .screen-enter {
             opacity: 0;
@@ -281,10 +297,42 @@
             </div>
 
             <!-- Right Side: The Big +1 Button (entire section clickable) -->
-            <div id="tallyArea" class="flex items-center justify-center flex-1 px-8 py-6 bg-green-500 transition-all duration-300">
-                <button id="tallyButton" class="tap-btn text-white font-bold shadow-none transition-all duration-150 ease-in-out">
-                    +1
-                </button>
+            <div id="tallyArea" class="flex flex-col items-center justify-start flex-1 px-6 py-0 bg-green-500 transition-all duration-300 overflow-auto">
+                <!-- Panel top: reserves space so the +1 button stays vertically centered above the sticky footer -->
+                <div class="panelTop w-full">
+                    <div class="w-full flex items-center justify-center">
+                        <button id="tallyButton" class="tap-btn text-white font-bold shadow-none transition-all duration-150 ease-in-out">
+                            +1
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sticky footer prompt at the bottom of the panel that invites scrolling -->
+                <div class="panelFooter w-full">
+                    <div id="whyPrompt" class="text-center">
+                        <div class="inline-flex flex-col items-center">
+                            <span class="whyTitle">Why is this important?</span>
+                            <span id="whyArrow" aria-hidden="true">
+                                <!-- Non-emoji chevron down SVG -->
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrollable filler content area where user can paste info about food waste; initially below the viewport -->
+                <div id="whyContent" class="mt-4 px-4 pb-8 w-full">
+                    <p>I created this app to solve the issue of food waste in the AES community through a shared goal of clean plates in the Cafeterias, the Tigers's Den, and more. </p>
+                    <p>A portion is the amount of food you choose to eat at one time. Many people inadvertently consume food due to the power of habit rather than hunger, resulting in unnecessary waste.</p>
+                    <p>Here are some Tips:</p>
+                    <p>Take only a smaller portion. You can always take more later if you need more.</p>
+                    <p>Use the hunger check - How hungry am I on a scale of 1-10?</p>
+                    <p>Avoid being distracted by your phone so you can be mindful about how much you are taking</p>
+                    <p>Pause mid-meal to see if you are still hungry, if you can save the rest, and did you take so much that you know better for next time.</p>
+                    <p>Practice “one plate only” policy - put everything you plan to eat to fit on one plate, and avoid going back for seconds until 10 minutes have passed since your first serving.</p>
+                </div>
             </div>
         </div>
 
