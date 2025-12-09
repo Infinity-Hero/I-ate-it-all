@@ -309,32 +309,31 @@
 
                 <!-- Sticky footer prompt at the bottom of the panel that invites scrolling -->
                 <div class="panelFooter w-full">
-                    <div id="whyPrompt" class="text-center">
-                        <div class="inline-flex flex-col items-center">
-                            <span class="whyTitle">Why is this important?</span>
-                            <span id="whyArrow" aria-hidden="true">
-                                <!-- Non-emoji chevron down SVG -->
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Scrollable filler content area where user can paste info about food waste; initially below the viewport -->
-                <div id="whyContent" class="mt-4 px-4 pb-8 w-full">
-                    <p>I created this app to solve the issue of food waste in the AES community through a shared goal of clean plates in the Cafeterias, the Tigers's Den, and more. </p>
-                    <p>A portion is the amount of food you choose to eat at one time. Many people inadvertently consume food due to the power of habit rather than hunger, resulting in unnecessary waste.</p>
-                    <p>Here are some Tips:</p>
-                    <p>Take only a smaller portion. You can always take more later if you need more.</p>
-                    <p>Use the hunger check - How hungry am I on a scale of 1-10?</p>
-                    <p>Avoid being distracted by your phone so you can be mindful about how much you are taking</p>
-                    <p>Pause mid-meal to see if you are still hungry, if you can save the rest, and did you take so much that you know better for next time.</p>
-                    <p>Practice “one plate only” policy - put everything you plan to eat to fit on one plate, and avoid going back for seconds until 10 minutes have passed since your first serving.</p>
-                </div>
-            </div>
+    <div id="whyPrompt" class="text-center cursor-pointer">
+        
+        <div class="inline-flex flex-col items-center border-2 border-green-700 rounded-lg p-2 bg-white/50 hover:bg-white/80 transition-colors">
+            <span class="whyTitle font-bold text-green-900">Why is this important?</span>
+            <span id="whyArrow" aria-hidden="true">
+                <svg class="w-6 h-6 text-green-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </span>
         </div>
+    </div>
+</div>
+
+<div id="whyContent" class="mt-4 px-4 pb-8 w-full">
+    <p>I created this app to solve the issue of food waste in the AES community through a shared goal of clean plates in the Cafeterias, the Tigers's Den, and more. </p>
+    <p class="mt-2">A portion is the amount of food you choose to eat at one time. Many people inadvertently consume food due to the power of habit rather than hunger, resulting in unnecessary waste.</p>
+    <p class="mt-2 font-bold">Here are some Tips:</p>
+    <ul class="list-disc pl-5 mt-2 space-y-1">
+        <li>Take only a smaller portion. You can always take more later if you need more.</li>
+        <li>Use the hunger check - How hungry am I on a scale of 1-10?</li>
+        <li>Avoid being distracted by your phone so you can be mindful about how much you are taking</li>
+        <li>Pause mid-meal to see if you are still hungry, if you can save the rest, and did you take so much that you know better for next time.</li>
+        <li>Practice “one plate only” policy - put everything you plan to eat to fit on one plate, and avoid going back for seconds until 10 minutes have passed since your first serving.</li>
+    </ul>
+</div>
 
         <!-- Removed slider control - layout is fixed to match mockup -->
     </div>
@@ -750,6 +749,36 @@
         authAnonymous(); // Sign in anonymously
         listenToTally(); // Start listening for score updates
 
+        // --- 8. autoscroll for main screen --- //
+        
+    document.addEventListener("DOMContentLoaded", function() {
+        const promptBtn = document.getElementById('whyPrompt');
+        const contentDiv = document.getElementById('whyContent');
+
+        promptBtn.addEventListener('click', function() {
+            // This scrolls the content into view smoothly
+            contentDiv.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        });
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        const promptBtn = document.getElementById('whyPrompt');
+        const contentDiv = document.getElementById('whyContent');
+
+        promptBtn.addEventListener('click', function(event) {
+            // 1. Stop the event from propagating (bubbling) up to the 
+            //    parent elements (the larger button behind it).
+            event.stopPropagation(); 
+
+            // 2. Scroll the content into view smoothly (your original action)
+            contentDiv.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        });
+    });
     </script>
 </body>
 </html>
